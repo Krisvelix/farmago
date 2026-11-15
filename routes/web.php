@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\PharmacyController;
 use App\Http\Controllers\Admin\PharmacyVerificationController;
+use App\Http\Controllers\CustomerController;
 
 // Halaman utama
 Route::get('/', function () {
@@ -47,9 +48,17 @@ Route::get('/pharmacy/dashboard', function () {
 })->middleware(['auth', 'role:pharmacy']);
 
 // Dashboard Customer
-Route::get('/customer/dashboard', function () {
-    return view('customer.index');
-})->middleware(['auth', 'role:customer']);
+Route::middleware(['auth', 'role:customer'])
+    ->prefix('customer')
+    ->name('customer.')
+    ->group(function () {
+        Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
+        Route::get('/medicines', [CustomerController::class, 'medicines'])->name('medicines');
+        Route::get('/medicines/{id}', [CustomerController::class, 'showMedicine'])->name('medicines.show');
+        Route::post('/medicines/{id}/request', [CustomerController::class, 'storeRequest'])->name('medicines.request');
+        Route::get('/pharmacies', [CustomerController::class, 'pharmacies'])->name('pharmacies');
+        Route::get('/requests', [CustomerController::class, 'requests'])->name('requests');
+    });
 
 // CRUD Pengguna khusus Admin
 Route::middleware(['auth', 'role:admin'])
