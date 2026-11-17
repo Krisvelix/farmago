@@ -186,7 +186,7 @@ class PharmacyController extends Controller
     {
         $pharmacy = auth()->user()->pharmacy;
 
-        if (!$pharmacy || $confirmationRequest->pharmacy_id !== $pharmacy->id) {
+        if (!$pharmacy || $pharmacy->verification_status !== 'approved' || $confirmationRequest->pharmacy_id !== $pharmacy->id) {
             abort(403);
         }
 

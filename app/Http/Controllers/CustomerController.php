@@ -59,22 +59,56 @@ class CustomerController extends Controller
 
     public function storeRequest(Request $request, $id)
     {
-        $request->validate([
-            'pharmacy_id' => 'required|integer',
-        ]);
+        $validated = $request->validate(
+            [
+                'pharmacy_id' => 'required|integer|exists:pharmacies,id',
+                'quantity' => 'nullable|integer|min:1',
+                'note' => 'nullable|string|max:255',
+            ],
+            [
+                'pharmacy_id.required' => 'Apotek wajib dipilih.',
+                'pharmacy_id.integer' => 'ID apotek tidak valid.',
+                'pharmacy_id.exists' => 'Apotek tidak ditemukan.',
+                'quantity.integer' => 'Jumlah obat harus berupa angka.',
+                'quantity.min' => 'Jumlah obat minimal 1.',
+                'note.string' => 'Catatan harus berupa teks.',
+                'note.max' => 'Catatan tidak boleh lebih dari 255 karakter.',
+            ]
+        );
 
-        $pharmacyId = $request->integer('pharmacy_id');
-        $medicine = Medicine::where('id', $id)->first();
+        $pharmacyId = (int) $validated['pharmacy_id'];
+        $pharmacy = Pharmacy::find($pharmacyId);
+        $medicineGroup = Medicine::find($id);
+        $medicine = $medicineGroup
+            ? Medicine::where('name', $medicineGroup->name)
+                ->where('pharmacy_id', $pharmacyId)
+                ->first()
+            : null;
 
-        if ($medicine && Pharmacy::where('id', $pharmacyId)->exists()) {
-            ConfirmationRequest::create([
-                'customer_id' => auth()->id(),
-                'pharmacy_id' => $pharmacyId,
-                'medicine_id' => $medicine->id,
-                'quantity' => 1,
-                'status' => 'pending',
-            ]);
+        if (!$pharmacy || $pharmacy->verification_status !== 'approved') {
+            return back()->withInput()->with('error', 'Apotek belum disetujui atau tidak ditemukan.');
         }
+
+        if (!$medicine) {
+            return back()->withInput()->with('error', 'Obat tidak tersedia di apotek yang dipilih.');
+        }
+
+        if ((int) $medicine->pharmacy_id !== $pharmacy->id) {
+            return back()->withInput()->with('error', 'Obat tidak tersedia di apotek yang dipilih.');
+        }
+
+        if (!$medicine->is_available) {
+            return back()->withInput()->with('error', 'Obat sedang tidak tersedia.');
+        }
+
+        ConfirmationRequest::create([
+            'customer_id' => auth()->id(),
+            'pharmacy_id' => $pharmacy->id,
+            'medicine_id' => $medicine->id,
+            'quantity' => $validated['quantity'] ?? 1,
+            'note' => $validated['note'] ?? null,
+            'status' => 'pending',
+        ]);
 
         return redirect()->route('customer.requests')
             ->with('success', 'Permintaan konfirmasi berhasil dikirim ke apotek.');
@@ -193,16 +227,20 @@ class CustomerController extends Controller
                         'date' => $r->created_at->translatedFormat('d M Y H:i'),
                         'medicine' => $r->medicine->name ?? 'Obat',
                         'pharmacy' => $r->pharmacy->pharmacy_name ?? 'Apotek',
+                        'quantity' => $r->quantity,
+                        'note' => $r->note,
                         'status' => $r->status,
+                        'response_note' => $r->response_note,
+                        'responded_at' => $r->responded_at?->translatedFormat('d M Y H:i'),
                     ];
                 })->toArray();
             }
         }
 
         return [
-            ['date' => '14 Nov 2026 09:15', 'medicine' => 'Paracetamol 500 mg', 'pharmacy' => 'Apotek Sehat Sentosa', 'status' => 'available'],
-            ['date' => '13 Nov 2026 16:40', 'medicine' => 'Amoxicillin 500 mg', 'pharmacy' => 'Apotek Medika Raya', 'status' => 'pending'],
-            ['date' => '12 Nov 2026 11:02', 'medicine' => 'Cetirizine 10 mg', 'pharmacy' => 'Apotek Kimia Farma Kedaton', 'status' => 'unavailable'],
+            ['date' => '14 Nov 2026 09:15', 'medicine' => 'Paracetamol 500 mg', 'pharmacy' => 'Apotek Sehat Sentosa', 'quantity' => 1, 'note' => null, 'status' => 'available', 'response_note' => null, 'responded_at' => null],
+            ['date' => '13 Nov 2026 16:40', 'medicine' => 'Amoxicillin 500 mg', 'pharmacy' => 'Apotek Medika Raya', 'quantity' => 1, 'note' => null, 'status' => 'pending', 'response_note' => null, 'responded_at' => null],
+            ['date' => '12 Nov 2026 11:02', 'medicine' => 'Cetirizine 10 mg', 'pharmacy' => 'Apotek Kimia Farma Kedaton', 'quantity' => 1, 'note' => null, 'status' => 'unavailable', 'response_note' => null, 'responded_at' => null],
         ];
     }
 }

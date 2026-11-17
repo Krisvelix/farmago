@@ -48,11 +48,40 @@
                                 @endif
                             </td>
                             <td class="text-end">
-                                <form action="{{ route('customer.medicines.request', $medicine['id']) }}" method="POST" class="mb-0">
-                                    @csrf
-                                    <input type="hidden" name="pharmacy_id" value="{{ $o['pharmacy_id'] }}">
-                                    <button type="submit" class="btn btn-outline-success btn-sm">Minta Konfirmasi</button>
-                                </form>
+                                 <form action="{{ route('customer.medicines.request', $medicine['id']) }}" method="POST" class="mb-0">
+                                     @csrf
+                                     <input type="hidden" name="pharmacy_id" value="{{ $o['pharmacy_id'] }}">
+                                     @php($isSubmittedPharmacy = (string) old('pharmacy_id') === (string) $o['pharmacy_id'])
+                                     @if ($isSubmittedPharmacy && session('error'))
+                                         <div class="alert alert-danger small text-start" role="alert">
+                                             {{ session('error') }}
+                                         </div>
+                                     @endif
+                                     @if ($isSubmittedPharmacy && $errors->any())
+                                         <div class="alert alert-danger small text-start" role="alert">
+                                             Terjadi kesalahan pada data permintaan.
+                                         </div>
+                                     @endif
+                                     <div class="text-start mb-2">
+                                         <label for="quantity-{{ $o['pharmacy_id'] }}" class="form-label small mb-1">Jumlah</label>
+                                         <input type="number" id="quantity-{{ $o['pharmacy_id'] }}" name="quantity" min="1" value="{{ $isSubmittedPharmacy ? old('quantity', 1) : 1 }}" class="form-control form-control-sm">
+                                         @if ($isSubmittedPharmacy)
+                                             @error('quantity')
+                                                 <div class="text-danger small">{{ $message }}</div>
+                                             @enderror
+                                         @endif
+                                     </div>
+                                     <div class="text-start mb-2">
+                                         <label for="note-{{ $o['pharmacy_id'] }}" class="form-label small mb-1">Catatan (opsional)</label>
+                                         <input type="text" id="note-{{ $o['pharmacy_id'] }}" name="note" maxlength="255" value="{{ $isSubmittedPharmacy ? old('note') : '' }}" class="form-control form-control-sm">
+                                         @if ($isSubmittedPharmacy)
+                                             @error('note')
+                                                 <div class="text-danger small">{{ $message }}</div>
+                                             @enderror
+                                         @endif
+                                     </div>
+                                     <button type="submit" class="btn btn-outline-success btn-sm">Minta Konfirmasi</button>
+                                 </form>
                             </td>
                         </tr>
                     @endforeach

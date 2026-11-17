@@ -20,9 +20,23 @@
                     @forelse ($requests as $r)
                         <tr>
                             <td>{{ $r['date'] }}</td>
-                            <td>{{ $r['medicine'] }}</td>
+                            <td>
+                                <strong>{{ $r['medicine'] }}</strong>
+                                <div class="small text-muted">Jumlah: {{ $r['quantity'] }}</div>
+                                @if ($r['note'])
+                                    <div class="small text-muted">Catatan: {{ $r['note'] }}</div>
+                                @endif
+                            </td>
                             <td>{{ $r['pharmacy'] }}</td>
-                            <td>@include('customer.requests._status', ['status' => $r['status']])</td>
+                            <td>
+                                @include('customer.requests._status', ['status' => $r['status']])
+                                @if ($r['responded_at'])
+                                    <div class="small text-muted mt-1">Direspons: {{ $r['responded_at'] }}</div>
+                                @endif
+                                @if ($r['response_note'])
+                                    <div class="small mt-1">{{ $r['response_note'] }}</div>
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
