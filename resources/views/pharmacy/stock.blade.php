@@ -3,95 +3,120 @@
 @section('title', 'Kelola Stok dan Harga')
 
 @section('content')
-<div class="mb-4">
-    <h3 class="fw-bold">Pengelolaan Stok dan Harga</h3>
-    <p class="text-muted">Perbarui stok dan harga obat secara cepat di {{ $pharmacy->pharmacy_name }}.</p>
-</div>
+    <div class="fg-page-head">
+        <h1>Pengelolaan Stok dan Harga</h1>
+        <p>Perbarui harga dan jumlah stok obat secara instan tanpa perlu masuk ke form edit.</p>
+    </div>
 
-<div class="card border-0 shadow-sm p-3 mb-4">
-    <div class="d-flex flex-wrap gap-2 align-items-center">
-        <form action="{{ route('pharmacy.stock') }}" method="GET" class="d-flex gap-2">
-            <input type="hidden" name="filter" value="{{ $filter }}">
-            <input type="text" name="q" class="form-control" placeholder="Cari obat..." value="{{ $q }}" style="max-width: 280px;">
-            <button type="submit" class="btn btn-success">Cari</button>
-            @if ($q !== '')
-                <a href="{{ route('pharmacy.stock', ['filter' => $filter]) }}" class="btn btn-outline-secondary">Reset</a>
-            @endif
-        </form>
+    {{-- Filter & Pencarian Toolbar --}}
+    <div class="fg-card fg-card-pad mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <form action="{{ route('pharmacy.stock') }}" method="GET" class="d-flex gap-2" style="max-width: 360px; width: 100%;">
+                <input type="hidden" name="filter" value="{{ $filter }}">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Cari nama atau kategori..." value="{{ $q }}">
+                    <button type="submit" class="fg-btn-sm success" style="border-radius: 0 8px 8px 0;"><i class="bi bi-search"></i></button>
+                </div>
+                @if ($q !== '')
+                    <a href="{{ route('pharmacy.stock', ['filter' => $filter]) }}" class="fg-btn-sm outline" title="Reset">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                @endif
+            </form>
 
-        <div class="d-flex gap-2 ms-auto">
-            <a href="{{ route('pharmacy.stock', ['q' => $q, 'filter' => 'all']) }}" class="btn btn-sm {{ $filter === 'all' ? 'btn-secondary' : 'btn-outline-secondary' }}">Semua</a>
-            <a href="{{ route('pharmacy.stock', ['q' => $q, 'filter' => 'available']) }}" class="btn btn-sm {{ $filter === 'available' ? 'btn-success' : 'btn-outline-success' }}">Tersedia</a>
-            <a href="{{ route('pharmacy.stock', ['q' => $q, 'filter' => 'low_stock']) }}" class="btn btn-sm {{ $filter === 'low_stock' ? 'btn-warning text-dark' : 'btn-outline-warning' }}">Menipis</a>
-            <a href="{{ route('pharmacy.stock', ['q' => $q, 'filter' => 'out_of_stock']) }}" class="btn btn-sm {{ $filter === 'out_of_stock' ? 'btn-danger' : 'btn-outline-danger' }}">Habis</a>
+            <div class="fg-chips">
+                <a href="{{ route('pharmacy.stock', ['q' => $q, 'filter' => 'all']) }}"
+                   class="fg-chip {{ $filter === 'all' ? 'active' : '' }}">
+                    Semua
+                </a>
+                <a href="{{ route('pharmacy.stock', ['q' => $q, 'filter' => 'available']) }}"
+                   class="fg-chip {{ $filter === 'available' ? 'active' : '' }}">
+                    Tersedia
+                </a>
+                <a href="{{ route('pharmacy.stock', ['q' => $q, 'filter' => 'low_stock']) }}"
+                   class="fg-chip {{ $filter === 'low_stock' ? 'active' : '' }}">
+                    Menipis (&le; 10)
+                </a>
+                <a href="{{ route('pharmacy.stock', ['q' => $q, 'filter' => 'out_of_stock']) }}"
+                   class="fg-chip {{ $filter === 'out_of_stock' ? 'active' : '' }}">
+                    Habis (0)
+                </a>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="card border-0 shadow-sm">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-success">
-                <tr>
-                    <th>Nama Obat</th>
-                    <th>Kategori</th>
-                    <th>Harga (Rp)</th>
-                    <th>Stok</th>
-                    <th>Tersedia</th>
-                    <th class="text-center">Simpan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($medicines as $med)
+    {{-- Tabel Inline Update --}}
+    @if ($medicines->isEmpty())
+        <div class="fg-card fg-empty">
+            <div class="ico"><i class="bi bi-sliders"></i></div>
+            <h3>Tidak ada obat yang sesuai</h3>
+            <p>Cobalah mengganti filter atau cari kata kunci lain.</p>
+            <a href="{{ route('pharmacy.stock') }}" class="fg-btn-sm outline">Reset Filter</a>
+        </div>
+    @else
+        <div class="fg-card" style="overflow: hidden;">
+            <table class="fg-table">
+                <thead>
                     <tr>
-                        <td>
-                            <strong>{{ $med->name }}</strong>
-                            <div class="small text-muted">Satuan: {{ $med->unit }}</div>
-                        </td>
-                        <td><span class="badge bg-light text-dark border">{{ $med->category ?? 'Umum' }}</span></td>
-                        <form action="{{ route('pharmacy.stock.update', $med) }}" method="POST">
-                            @csrf
-                            @method('PUT')
-                            <td>
-                                <div class="input-group input-group-sm" style="max-width: 160px;">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="number" name="price" class="form-control" value="{{ $med->price }}" min="0" step="100" required>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group input-group-sm" style="max-width: 130px;">
-                                    <input type="number" name="stock" class="form-control" value="{{ $med->stock }}" min="0" required>
-                                    <span class="input-group-text">{{ $med->unit }}</span>
-                                </div>
-                                @if ($med->stock <= 0)
-                                    <span class="badge bg-danger mt-1 d-block" style="width: fit-content;">Habis</span>
-                                @elseif ($med->stock <= 10)
-                                    <span class="badge bg-warning text-dark mt-1 d-block" style="width: fit-content;">Menipis</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="is_available" value="1" {{ $med->is_available ? 'checked' : '' }}>
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <button type="submit" class="btn btn-success btn-sm">Simpan</button>
-                            </td>
-                        </form>
+                        <th style="min-width: 220px;">Nama Obat</th>
+                        <th>Kategori</th>
+                        <th style="min-width: 170px;">Harga Jual (Rp)</th>
+                        <th style="min-width: 150px;">Stok</th>
+                        <th style="text-align: center;">Tersedia</th>
+                        <th class="text-end" style="min-width: 100px;">Aksi</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-4">Tidak ada obat ditemukan.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
+                </thead>
+                <tbody>
+                    @foreach ($medicines as $med)
+                        <tr>
+                            <td>
+                                <strong class="d-block">{{ $med->name }}</strong>
+                                <span class="small fg-muted">Satuan: {{ $med->unit }}</span>
+                            </td>
+                            <td>
+                                <span class="fg-tag neutral">{{ $med->category ?? 'Umum' }}</span>
+                            </td>
+                            <form action="{{ route('pharmacy.stock.update', $med) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" name="price" class="form-control" value="{{ $med->price }}" min="0" step="100" required>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="stock" class="form-control" value="{{ $med->stock }}" min="0" required>
+                                        <span class="input-group-text">{{ $med->unit }}</span>
+                                    </div>
+                                    @if ($med->stock <= 0)
+                                        <span class="fg-pill out mt-1">Habis</span>
+                                    @elseif ($med->stock <= 10)
+                                        <span class="fg-pill low mt-1">Menipis</span>
+                                    @endif
+                                </td>
+                                <td style="text-align: center;">
+                                    <div class="form-check d-inline-block">
+                                        <input class="form-check-input" type="checkbox" name="is_available" value="1" {{ $med->is_available ? 'checked' : '' }}>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <button type="submit" class="fg-btn-sm success">
+                                        <i class="bi bi-save"></i> Simpan
+                                    </button>
+                                </td>
+                            </form>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
-@if ($medicines->hasPages())
-    <div class="mt-3">
-        {{ $medicines->links('pagination::bootstrap-5') }}
-    </div>
-@endif
+        @if ($medicines->hasPages())
+            <div class="mt-3">
+                {{ $medicines->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
+    @endif
 @endsection
