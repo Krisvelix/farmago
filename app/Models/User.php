@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name',
@@ -32,8 +33,14 @@ class User extends Authenticatable
             'is_active' => 'boolean',
         ];
     }
+
     public function pharmacy(): HasOne
-{
-    return $this->hasOne(Pharmacy::class);
-}
+    {
+        return $this->hasOne(Pharmacy::class);
+    }
+
+    public function confirmationRequests(): HasMany
+    {
+        return $this->hasMany(ConfirmationRequest::class, 'customer_id');
+    }
 }

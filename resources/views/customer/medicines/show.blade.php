@@ -62,6 +62,9 @@
                 if ($o['stock'] == 0)       { $cls = 'out'; $txt = 'Habis'; }
                 elseif ($o['stock'] <= 10)  { $cls = 'low'; $txt = 'Sisa ' . $o['stock']; }
                 else                        { $cls = 'ok';  $txt = 'Tersedia'; }
+
+                // apakah form apotek ini yang barusan disubmit (untuk menampilkan error & old input)
+                $isSubmittedPharmacy = (string) old('pharmacy_id') === (string) $o['pharmacy_id'];
             @endphp
 
             <div class="fg-offer {{ $isBest ? 'best' : '' }} {{ $o['stock'] == 0 ? 'empty' : '' }}">
@@ -86,11 +89,53 @@
                 <form action="{{ route('customer.medicines.request', $medicine['id']) }}" method="POST" class="mb-0 js-request">
                     @csrf
                     <input type="hidden" name="pharmacy_id" value="{{ $o['pharmacy_id'] }}">
+
                     @if ($o['stock'] == 0)
                         <button type="button" class="fg-btn" disabled>
                             <i class="bi bi-x-circle"></i> Stok habis
                         </button>
                     @else
+                        @if ($isSubmittedPharmacy && session('error'))
+                            <div class="alert alert-danger small text-start py-2 mb-2" role="alert">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+                        @if ($isSubmittedPharmacy && $errors->any())
+                            <div class="alert alert-danger small text-start py-2 mb-2" role="alert">
+                                Terjadi kesalahan pada data permintaan.
+                            </div>
+                        @endif
+
+                        <div class="text-start mb-2">
+                            <label for="quantity-{{ $o['pharmacy_id'] }}" class="form-label small mb-1">Jumlah</label>
+                            <input type="number"
+                                   id="quantity-{{ $o['pharmacy_id'] }}"
+                                   name="quantity"
+                                   min="1"
+                                   value="{{ $isSubmittedPharmacy ? old('quantity', 1) : 1 }}"
+                                   class="form-control form-control-sm">
+                            @if ($isSubmittedPharmacy)
+                                @error('quantity')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            @endif
+                        </div>
+
+                        <div class="text-start mb-2">
+                            <label for="note-{{ $o['pharmacy_id'] }}" class="form-label small mb-1">Catatan (opsional)</label>
+                            <input type="text"
+                                   id="note-{{ $o['pharmacy_id'] }}"
+                                   name="note"
+                                   maxlength="255"
+                                   value="{{ $isSubmittedPharmacy ? old('note') : '' }}"
+                                   class="form-control form-control-sm">
+                            @if ($isSubmittedPharmacy)
+                                @error('note')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            @endif
+                        </div>
+
                         <button type="submit" class="{{ $isBest ? 'fg-btn' : 'fg-btn ghost' }}">
                             <i class="bi bi-chat-dots"></i> Minta konfirmasi
                         </button>

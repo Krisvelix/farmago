@@ -27,6 +27,16 @@
                         <div class="body">
                             <strong>{{ $r['medicine'] }}</strong>
                             <span>{{ $r['pharmacy'] }} &middot; {{ $r['date'] }}</span>
+                            <span>Jumlah: {{ $r['quantity'] }}</span>
+                            @if ($r['note'])
+                                <span>Catatan: {{ $r['note'] }}</span>
+                            @endif
+                            @if ($r['responded_at'])
+                                <span>Direspons: {{ $r['responded_at'] }}</span>
+                            @endif
+                            @if ($r['response_note'])
+                                <span>{{ $r['response_note'] }}</span>
+                            @endif
                         </div>
                         @include('customer.requests._status', ['status' => $r['status']])
                     </li>
@@ -47,10 +57,24 @@
                 <tbody>
                     @foreach ($requests as $r)
                         <tr>
-                            <td class="fw-bold">{{ $r['medicine'] }}</td>
+                            <td>
+                                <span class="fw-bold">{{ $r['medicine'] }}</span>
+                                <div class="small fg-muted">Jumlah: {{ $r['quantity'] }}</div>
+                                @if ($r['note'])
+                                    <div class="small fg-muted">Catatan: {{ $r['note'] }}</div>
+                                @endif
+                            </td>
                             <td>{{ $r['pharmacy'] }}</td>
                             <td class="fg-muted">{{ $r['date'] }}</td>
-                            <td>@include('customer.requests._status', ['status' => $r['status']])</td>
+                            <td>
+                                @include('customer.requests._status', ['status' => $r['status']])
+                                @if ($r['responded_at'])
+                                    <div class="small fg-muted mt-1">Direspons: {{ $r['responded_at'] }}</div>
+                                @endif
+                                @if ($r['response_note'])
+                                    <div class="small mt-1">{{ $r['response_note'] }}</div>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

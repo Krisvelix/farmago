@@ -37,9 +37,9 @@
                     <p class="text-muted">
                         Lihat, tambah, ubah, dan kelola akun pengguna.
                     </p>
-                    <a href="{{ url('/admin/pharmacies') }}" class="btn btn-success">
-                      Verifikasi Apotek
-                    </a>
+                    <a href="{{ url('/admin/users') }}" class="btn btn-success">
+                        Kelola Pengguna
+                        </a>
                 </div>
             </div>
 
@@ -49,9 +49,9 @@
                     <p class="text-muted">
                         Periksa dan verifikasi pendaftaran apotek.
                     </p>
-                    <button class="btn btn-success" disabled>
-                        Segera Hadir
-                    </button>
+                    <a href="{{ url('/admin/pharmacies') }}" class="btn btn-success">
+                        Verifikasi Apotek
+                        </a>
                 </div>
             </div>
 
