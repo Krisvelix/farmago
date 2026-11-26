@@ -1,7 +1,7 @@
 @if ($status === 'available')
-    <span class="badge bg-success">Tersedia</span>
+    <span class="fg-pill ok">Tersedia</span>
 @elseif ($status === 'unavailable')
-    <span class="badge bg-danger">Tidak tersedia</span>
+    <span class="fg-pill out">Tidak tersedia</span>
 @else
-    <span class="badge bg-warning text-dark">Menunggu respons</span>
+    <span class="fg-pill wait">Menunggu respons</span>
 @endif

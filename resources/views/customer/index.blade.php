@@ -1,78 +1,94 @@
 @extends('customer.layouts.app')
 
-@section('title', 'Dashboard Customer')
+@section('title', 'Beranda')
 
 @section('content')
-    <h3 class="fw-bold">Dashboard Customer</h3>
-    <p class="text-muted">Selamat datang, {{ Auth::user()->name }}!</p>
+    @php
+        $firstName = \Illuminate\Support\Str::of(Auth::user()->name)->before(' ');
+        $suggestions = ['Paracetamol', 'Amoxicillin', 'Cetirizine', 'Antasida', 'Vitamin C'];
+    @endphp
 
-    {{-- Pencarian cepat --}}
-    <div class="card border-0 shadow-sm mb-4 bg-success text-white">
-        <div class="card-body p-4">
-            <h5 class="fw-bold">Cari obat yang kamu butuhkan</h5>
-            <p class="mb-3">Cek apotek yang menyediakan, harga, dan stoknya sebelum berkunjung.</p>
-            <form action="{{ route('customer.medicines') }}" method="GET" class="d-flex gap-2">
-                <input type="text" name="q" class="form-control" placeholder="Contoh: Paracetamol">
-                <button class="btn btn-light fw-semibold" type="submit">Cari</button>
-            </form>
+    {{-- Pencarian utama --}}
+    <section class="fg-hero">
+        <div class="hello">Halo, {{ $firstName }}</div>
+        <h1>Obat yang kamu cari, ada di apotek mana?</h1>
+        <p>Cek harga dan stok di apotek terverifikasi sebelum berangkat, jadi tidak perlu keliling.</p>
+
+        <form action="{{ route('customer.medicines') }}" method="GET" role="search">
+            <div class="fg-search">
+                <i class="bi bi-search lead-ico"></i>
+                <input type="search" name="q" placeholder="Nama obat, contoh: Paracetamol"
+                       autocomplete="off" enterkeyhint="search" aria-label="Cari nama obat">
+                <button type="submit" class="go"><span>Cari obat</span><i class="bi bi-arrow-right"></i></button>
+            </div>
+        </form>
+
+        <div class="chips-label">Sering dicari</div>
+        <div class="fg-chips">
+            @foreach ($suggestions as $s)
+                <a class="fg-chip" href="{{ route('customer.medicines', ['q' => $s]) }}">{{ $s }}</a>
+            @endforeach
         </div>
-    </div>
+    </section>
 
     {{-- Ringkasan --}}
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-0 p-3 h-100">
-                <h5>Cari Obat</h5>
-                <p class="text-muted">{{ $medicineCount }} obat tersedia untuk dicari.</p>
-                <a href="{{ route('customer.medicines') }}" class="btn btn-success mt-auto">Buka</a>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-0 p-3 h-100">
-                <h5>Daftar Apotek</h5>
-                <p class="text-muted">{{ $pharmacyCount }} apotek terdaftar di Farmago.</p>
-                <a href="{{ route('customer.pharmacies') }}" class="btn btn-success mt-auto">Buka</a>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-0 p-3 h-100">
-                <h5>Permintaan Konfirmasi</h5>
-                <p class="text-muted">Pantau jawaban apotek atas permintaanmu.</p>
-                <a href="{{ route('customer.requests') }}" class="btn btn-success mt-auto">Buka</a>
-            </div>
-        </div>
+    <div class="fg-stats">
+        <a href="{{ route('customer.medicines') }}" class="fg-stat">
+            <div class="ico"><i class="bi bi-capsule"></i></div>
+            <div class="num">{{ $medicineCount }}</div>
+            <div class="lbl">Obat bisa dicari</div>
+        </a>
+        <a href="{{ route('customer.pharmacies') }}" class="fg-stat">
+            <div class="ico"><i class="bi bi-shop"></i></div>
+            <div class="num">{{ $pharmacyCount }}</div>
+            <div class="lbl">Apotek terdaftar</div>
+        </a>
+        <a href="{{ route('customer.requests') }}" class="fg-stat">
+            <div class="ico"><i class="bi bi-chat-dots"></i></div>
+            <div class="num">{{ count($recentRequests) }}</div>
+            <div class="lbl">Permintaan terbaru</div>
+        </a>
     </div>
 
     {{-- Obat populer --}}
-    <h5 class="fw-bold mb-3">Obat yang sering dicari</h5>
-    <div class="row mb-4">
+    <div class="fg-section-head">
+        <h2 class="fg-section-title">Obat yang sering dicari</h2>
+        <a href="{{ route('customer.medicines') }}">Lihat semua</a>
+    </div>
+    <div class="fg-grid four">
         @foreach ($popular as $m)
-            <div class="col-md-3 mb-3">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body">
-                        <h6 class="fw-bold">{{ $m['name'] }}</h6>
-                        <p class="text-muted small mb-2">{{ $m['category'] }}</p>
-                        <p class="mb-2">Mulai <strong>Rp {{ number_format($m['min_price'], 0, ',', '.') }}</strong></p>
-                        <a href="{{ route('customer.medicines.show', $m['id']) }}" class="btn btn-outline-success btn-sm">Lihat detail</a>
-                    </div>
-                </div>
-            </div>
+            @include('customer.medicines._card', ['m' => $m])
         @endforeach
     </div>
 
     {{-- Permintaan terbaru --}}
-    <h5 class="fw-bold mb-3">Permintaan konfirmasi terbaru</h5>
-    <div class="card shadow-sm border-0">
-        <ul class="list-group list-group-flush">
-            @foreach ($recentRequests as $r)
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ $r['medicine'] }}</strong>
-                        <div class="small text-muted">{{ $r['pharmacy'] }} &middot; {{ $r['date'] }}</div>
-                    </div>
-                    @include('customer.requests._status', ['status' => $r['status']])
-                </li>
-            @endforeach
-        </ul>
+    <div class="fg-section-head">
+        <h2 class="fg-section-title">Permintaan konfirmasi terbaru</h2>
+        <a href="{{ route('customer.requests') }}">Lihat riwayat</a>
     </div>
+
+    @if (count($recentRequests) === 0)
+        <div class="fg-card fg-empty">
+            <div class="ico"><i class="bi bi-chat-dots"></i></div>
+            <h3>Belum ada permintaan</h3>
+            <p>Saat kamu minta apotek mengonfirmasi stok, statusnya muncul di sini.</p>
+        </div>
+    @else
+        <div class="fg-card">
+            <ul class="fg-list">
+                @foreach ($recentRequests as $r)
+                    <li>
+                        <span class="ico {{ $r['status'] === 'unavailable' ? 'out' : ($r['status'] === 'pending' ? 'low' : '') }}">
+                            <i class="bi {{ $r['status'] === 'available' ? 'bi-check2-circle' : ($r['status'] === 'unavailable' ? 'bi-x-circle' : 'bi-hourglass-split') }}"></i>
+                        </span>
+                        <div class="body">
+                            <strong>{{ $r['medicine'] }}</strong>
+                            <span>{{ $r['pharmacy'] }} &middot; {{ $r['date'] }}</span>
+                        </div>
+                        @include('customer.requests._status', ['status' => $r['status']])
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 @endsection
