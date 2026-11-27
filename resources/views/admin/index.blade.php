@@ -1,74 +1,45 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Farmago</title>
+@extends('admin.layouts.app')
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+@section('title', 'Dashboard')
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">Farmago Admin</a>
-
-            <form action="{{ url('/logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-outline-light btn-sm">
-                    Logout
-                </button>
-            </form>
-        </div>
-    </nav>
-
-    <div class="container mt-5">
-        <h3 class="fw-bold">Dashboard Admin</h3>
-
-        <p class="text-muted">
-            Selamat datang, {{ Auth::user()->name }}!
-        </p>
-
-        <div class="row mt-4">
-
-            <div class="col-md-4 mb-3">
-                <div class="card shadow-sm border-0 p-3">
-                    <h5>Kelola Pengguna</h5>
-                    <p class="text-muted">
-                        Lihat, tambah, ubah, dan kelola akun pengguna.
-                    </p>
-                    <a href="{{ url('/admin/users') }}" class="btn btn-success">
-                        Kelola Pengguna
-                        </a>
-                </div>
+@section('content')
+    <div class="fg-page-head">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3">
+            <div>
+                <div class="fg-tag info mb-2"><i class="bi bi-shield-check"></i> Panel administrasi</div>
+                <h1>Dashboard Admin</h1>
+                <p>Kelola pengguna dan pastikan setiap apotek di Farmago terverifikasi dengan baik.</p>
             </div>
-
-            <div class="col-md-4 mb-3">
-                <div class="card shadow-sm border-0 p-3">
-                    <h5>Verifikasi Apotek</h5>
-                    <p class="text-muted">
-                        Periksa dan verifikasi pendaftaran apotek.
-                    </p>
-                    <a href="{{ url('/admin/pharmacies') }}" class="btn btn-success">
-                        Verifikasi Apotek
-                        </a>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <div class="card shadow-sm border-0 p-3">
-                    <h5>Kelola Data</h5>
-                    <p class="text-muted">
-                        Pantau data obat dan aktivitas Farmago.
-                    </p>
-                    <button class="btn btn-success" disabled>
-                        Segera Hadir
-                    </button>
-                </div>
-            </div>
-
+            <div class="fg-muted small">Selamat datang, <strong>{{ Auth::user()->name }}</strong></div>
         </div>
     </div>
 
-</body>
-</html>
+    <div class="fg-grid">
+        <a href="{{ url('/admin/users') }}" class="fg-card fg-card-pad text-decoration-none h-100">
+            <div class="fg-stat p-0 border-0 shadow-none">
+                <div class="ico"><i class="bi bi-people"></i></div>
+                <div class="num">Pengguna</div>
+                <div class="lbl">Lihat, tambah, ubah, dan kelola akun pengguna Farmago.</div>
+                <span class="fg-btn-sm success mt-3">Kelola pengguna <i class="bi bi-arrow-right"></i></span>
+            </div>
+        </a>
+        <a href="{{ url('/admin/pharmacies') }}" class="fg-card fg-card-pad text-decoration-none h-100">
+            <div class="fg-stat p-0 border-0 shadow-none">
+                <div class="ico"><i class="bi bi-shop"></i></div>
+                <div class="num">Apotek</div>
+                <div class="lbl">Periksa pendaftaran dan verifikasi apotek yang masuk.</div>
+                <span class="fg-btn-sm success mt-3">Buka verifikasi <i class="bi bi-arrow-right"></i></span>
+            </div>
+        </a>
+        <div class="fg-card fg-card-pad h-100">
+            <div class="fg-stat p-0 border-0 shadow-none">
+                <div class="ico"><i class="bi bi-bar-chart"></i></div>
+                <div class="num">Data Farmago</div>
+                <div class="lbl">Ringkasan aktivitas dan pengelolaan data akan tersedia di sini.</div>
+                <span class="fg-tag neutral mt-3">Segera hadir</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="fg-note mt-4"><i class="bi bi-info-circle-fill"></i><span>Gunakan menu di atas untuk berpindah antar area administrasi.</span></div>
+@endsection

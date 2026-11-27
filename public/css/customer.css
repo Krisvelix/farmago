@@ -180,6 +180,11 @@
 }
 .fg-flash i { font-size: 1.25rem; color: var(--fg-green-d); }
 .fg-flash .btn-close { margin-left: auto; font-size: .75rem; }
+.fg-flash-warning { background: var(--fg-amber-bg); color: var(--fg-amber); border-color: #f9dfaf; }
+.fg-flash-warning i { color: var(--fg-amber); }
+.fg-flash-error { background: var(--fg-red-bg); color: var(--fg-red); border-color: #f6c8c2; }
+.fg-flash-error i { color: var(--fg-red); }
+.fg-flash-error ul { color: var(--fg-red); }
 
 /* ---------- Page head ---------- */
 .fg-page-head { margin-bottom: 22px; }
@@ -558,4 +563,3 @@
     color: #a4b5ad;
     background: var(--fg-paper);
 }
-
